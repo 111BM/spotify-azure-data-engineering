@@ -1,0 +1,18 @@
+# Gold layer: Lakeflow Declarative Pipeline (DLT) for the Spotify star schema and KPIs
+
+resources:
+  pipelines:
+    spotify_dab_etl:
+      name: spotify_dab_etl
+      catalog: spotify_catalog
+      schema: gold
+      serverless: true
+      root_path: "../src/gold/spotify_DeltaLiveTable"
+
+      libraries:
+        - glob:
+            include: ../src/gold/spotify_DeltaLiveTable/transformations/**
+
+      environment:
+        dependencies:
+          - --editable ${workspace.file_path}

@@ -1,0 +1,9 @@
+{
+	"name": "tamdfazureproject",
+	"location": "australiaeast",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "ceb7aa7d-14f7-47bf-ae57-2a4a1e466420",
+		"tenantId": "4cebf61c-09dd-4f56-95c0-11c3451ab46d"
+	}
+}
