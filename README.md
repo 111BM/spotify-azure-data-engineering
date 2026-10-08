@@ -23,8 +23,8 @@ ADLS Gen2  silver/   Delta tables registered in Unity Catalog (spotify_catalog.s
         │  Lakeflow Declarative Pipeline (DLT) with expectations
         ▼
 spotify_catalog.gold
-   ├── dimensions: dim_user (SCD Type 2 via AUTO CDC), dim_track, dim_artist, dim_date
-   ├── facts:      fact_stream
+   ├── dimensions: dim_user, dim_artist, dim_track, dim_date (SCD Type 2 via AUTO CDC)
+   ├── facts:      fact_stream (SCD Type 1 upsert via AUTO CDC)
    └── insights:   user_weekly_kpis, top_tracks_per_country,
                    most_streamed_tracks_per_week, average_listen_duration_per_device
         ▼
@@ -53,7 +53,8 @@ Databricks dashboards
 3. **Copy** — selects rows where `cdc_col > last_cdc` into `bronze/<table>/` as Parquet.
 4. **If condition** on rows copied:
    - *true* → **Script** `max_cdc` gets the new high-water mark, **Copy** `update_last_cdc` writes it back;
-   - *false* → **Delete** the empty file the copy activity leaves behind.
+   - *false* → **Delete** the empty file the copy activity leaves behind (the copy always
+     writes a file, so empty loads are cleaned up rather than skipped).
 5. **Web activity** posts to a Logic App that sends an email when the loop succeeds.
 
 The watermark only moves after a successful copy, so a failed run is re-run safely from
@@ -85,7 +86,8 @@ Bronze holds one data folder and one `_cdc` watermark folder per table:
 
 - Staging views read Silver as streams and apply **expectations** (`expect_all_or_drop`),
   e.g. `user_id IS NOT NULL`.
-- `dim_user` is **SCD Type 2** using `create_auto_cdc_flow` keyed on `user_id`, sequenced by `updated_at`.
+- All four dimensions are **SCD Type 2** using `create_auto_cdc_flow` (e.g. `dim_user` keyed on
+  `user_id`, sequenced by `updated_at`); `fact_stream` uses AUTO CDC as an SCD Type 1 upsert.
 - Insight tables aggregate business KPIs for dashboards.
 
 ![Lakeflow pipeline graph: staging tables with expectations feeding the Gold dimensions and fact](docs/images/gold_dlt_graph.png)
@@ -139,7 +141,7 @@ provisions its own compute; interactive clusters are for testing plain Spark log
 
 - Unit tests for the transformation helpers and CI that runs `bundle validate` on every PR.
 - Switch ADF linked services from SQL auth / account key to managed identity + Key Vault.
-- Use `MERGE` (or AUTO CDC) for the remaining dimensions and handle source deletes.
+- Handle source deletes (`apply_as_deletes`) and add expectations to `dim_track`, `dim_date` and the fact.
 - Alert on failure too: the Logic App call currently runs only when the loop succeeds.
 
 ## Tech
