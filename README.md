@@ -59,6 +59,18 @@ Databricks dashboards
 The watermark only moves after a successful copy, so a failed run is re-run safely from
 the previous watermark. A `from_date` in `loop_input` allows a backfill.
 
+![ADF pipeline: ForEach over the tables, then the Logic App alert](docs/images/adf_pipeline.png)
+
+![Inside the ForEach: watermark lookup, copy, and the If condition that updates the watermark or deletes the empty file](docs/images/adf_foreach_activities.png)
+
+A run where every activity succeeded (`DeleteEmptyfile` runs for tables with no new rows):
+
+![ADF run output with all activities succeeded](docs/images/adf_run_succeeded.png)
+
+Bronze holds one data folder and one `_cdc` watermark folder per table:
+
+![ADLS bronze container with a data folder and a _cdc folder per table](docs/images/adls_bronze_folders.png)
+
 ## 2. Silver — Databricks Auto Loader
 
 - Unity Catalog metastore, access connector, storage credential and external locations
@@ -75,6 +87,12 @@ the previous watermark. A `from_date` in `loop_input` allows a backfill.
   e.g. `user_id IS NOT NULL`.
 - `dim_user` is **SCD Type 2** using `create_auto_cdc_flow` keyed on `user_id`, sequenced by `updated_at`.
 - Insight tables aggregate business KPIs for dashboards.
+
+![Lakeflow pipeline graph: staging tables with expectations feeding the Gold dimensions and fact](docs/images/gold_dlt_graph.png)
+
+`user_weekly_kpis` read back from `spotify_catalog.gold` for the dashboard:
+
+![user_weekly_kpis query result](docs/images/gold_user_weekly_kpis.png)
 
 ## Deployment
 
@@ -99,6 +117,8 @@ from `DimUser`. Cause: the same checkpoint / schema location had been reused, an
 Loader merges newly inferred schemas with the one stored in `_schemas`. Fix: one
 schema location and checkpoint per table, then clear the polluted checkpoint and Silver
 folder and re-ingest. Lesson: the checkpoint *is* Auto Loader's memory.
+
+![Auto Loader schema for DimArtist showing DimUser columns leaking in](docs/images/issue_autoloader_schema_leak.png)
 
 **2. KPI table built with 0 rows and no error.**
 `user_weekly_kpis` filtered `stream_timestamp >= current_date() - 28`, but the source data
