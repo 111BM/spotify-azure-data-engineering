@@ -8,7 +8,7 @@ served as KPI tables and dashboards.
 > Built by following a guided Azure data engineering course, then extended and debugged
 > on my own. The [Issues I solved](#issues-i-solved) section is the part I'd most like
 > to talk about. My larger, independently designed project is
-> [databricks-lakehouse-platform](https://github.com/111BM).
+> [databricks-lakehouse-platform](https://github.com/111BM/databricks-lakehouse-platform).
 
 ## Architecture
 
