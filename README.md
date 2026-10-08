@@ -105,6 +105,10 @@ databricks bundle validate -t dev
 databricks bundle deploy -t dev
 ```
 
+Validating and deploying the bundle to the dev target (workspace user and host redacted):
+
+![databricks bundle validate, summary and deploy to dev](docs/images/dab_validate_deploy.png)
+
 Set the workspace host in `databricks.yml` and replace `<your-user>` placeholders first.
 ADF artifacts can be imported by connecting a Data Factory to this repo with `adf/` as
 the root folder. Replace `<LOGIC_APP_HTTP_TRIGGER_URL>` with your own Logic App trigger.
