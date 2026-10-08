@@ -54,7 +54,7 @@ Databricks dashboards
 4. **If condition** on rows copied:
    - *true* → **Script** `max_cdc` gets the new high-water mark, **Copy** `update_last_cdc` writes it back;
    - *false* → **Delete** the empty file the copy activity leaves behind.
-5. **Web activity** posts to a Logic App that emails success / failure.
+5. **Web activity** posts to a Logic App that sends an email when the loop succeeds.
 
 The watermark only moves after a successful copy, so a failed run is re-run safely from
 the previous watermark. A `from_date` in `loop_input` allows a backfill.
@@ -116,6 +116,7 @@ provisions its own compute; interactive clusters are for testing plain Spark log
 - Unit tests for the transformation helpers and CI that runs `bundle validate` on every PR.
 - Switch ADF linked services from SQL auth / account key to managed identity + Key Vault.
 - Use `MERGE` (or AUTO CDC) for the remaining dimensions and handle source deletes.
+- Alert on failure too: the Logic App call currently runs only when the loop succeeds.
 
 ## Tech
 
